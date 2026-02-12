@@ -1,0 +1,22 @@
+{
+  "name": "auth-mail",
+  "version": "1.0.0",
+  "description": "OAuth2-driven email relay for seamless Gmail integration",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "dev": "node --no-deprecation -r ts-node/register src/main.ts"
+  },
+  "dependencies": {
+    "googleapis": "^131.0.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.0",
+    "typescript": "^5.3.3",
+    "ts-node": "^10.9.2"
+  }
+}
