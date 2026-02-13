@@ -1,7 +1,7 @@
-import { UserTokens, UserProfile } from '../models/user';
+import { UserTokens, UserProfile } from "../models/user";
 
 export interface IAuthProvider {
-  getAuthUrl(email: string): string;
+  getAuthUrl(): string;
   exchangeCodeForTokens(code: string): Promise<UserTokens>;
   refreshAccessToken(refreshToken: string): Promise<UserTokens>;
   getUserProfile(accessToken: string): Promise<UserProfile>;

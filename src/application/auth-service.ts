@@ -1,7 +1,7 @@
-import { IAuthProvider } from '../domain/ports/auth-provider';
-import { IAuthCallbackServer } from '../domain/ports/auth-callback-server';
-import { IUserRepository } from '../domain/ports/user-repository';
-import { User } from '../domain/models/user';
+import { IAuthProvider } from "../domain/ports/auth-provider";
+import { IAuthCallbackServer } from "../domain/ports/auth-callback-server";
+import { IUserRepository } from "../domain/ports/user-repository";
+import { User, IntegrationStatus } from "../domain/models/user";
 
 export class AuthService {
   constructor(
@@ -11,22 +11,27 @@ export class AuthService {
     private callbackPort: number,
   ) {}
 
-  async authenticate(email: string): Promise<User> {
-    const authUrl = this.authProvider.getAuthUrl(email);
+  async checkIntegration(): Promise<IntegrationStatus> {
+    const activeUser = await this.userRepository.getActiveUser();
 
-    console.log('\n🔗 Open this URL in your browser to authorize:\n');
-    console.log(authUrl);
-    console.log('\n⏳ Waiting for authorization...\n');
+    if (activeUser?.tokens?.refreshToken) {
+      return { isActive: true };
+    }
 
+    const authUrl = this.authProvider.getAuthUrl();
+    return { isActive: false, authUrl };
+  }
+
+  async authenticate(): Promise<User> {
     await this.callbackServer.start(this.callbackPort);
 
     try {
       const code = await this.callbackServer.waitForCode();
 
-      console.log('✅ Authorization code received. Exchanging for tokens...\n');
-
       const tokens = await this.authProvider.exchangeCodeForTokens(code);
-      const profile = await this.authProvider.getUserProfile(tokens.accessToken);
+      const profile = await this.authProvider.getUserProfile(
+        tokens.accessToken,
+      );
 
       const user: User = {
         email: profile.email,
@@ -56,8 +61,10 @@ export class AuthService {
       return user.tokens.accessToken;
     }
 
-    console.log('🔄 Access token expired, refreshing...');
-    const newTokens = await this.authProvider.refreshAccessToken(user.tokens.refreshToken);
+    console.log("🔄 Access token expired, refreshing...");
+    const newTokens = await this.authProvider.refreshAccessToken(
+      user.tokens.refreshToken,
+    );
     await this.userRepository.updateTokens(email, newTokens);
 
     return newTokens.accessToken;

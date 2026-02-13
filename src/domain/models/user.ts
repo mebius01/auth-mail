@@ -14,3 +14,14 @@ export interface User {
   profile: UserProfile;
   tokens: UserTokens;
 }
+
+export interface IntegrationStatus {
+  isActive: boolean;
+  authUrl?: string;
+}
+
+// getGmailAuthUrl, +
+// gmailCallback,
+// sendGmail, +
+// disconnectGmail, +
+// getGmailIntegrationStatus,
